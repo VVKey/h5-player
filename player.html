@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="shortcut icon" href="#" />
+    <style>
+        body,
+        h3 {
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        button {
+            padding: 0;
+            border: none;
+            outline: none;
+        }
+
+        #player {
+            width: 100%;
+        }
+
+        #player h3 {
+            font-size: 24px;
+            line-height: 2;
+            text-align: center;
+            color: black;
+            background-color: rgb(231, 232, 233);
+        }
+
+        #player .video-con {
+            width: 100%;
+            background-color: rgb(14, 13, 13);
+        }
+
+        #player .video-con video {
+            display: block;
+            height: 100%;
+            margin: 0 auto;
+        }
+
+        #player .controls {
+            display: flex;
+            box-sizing: border-box;
+            padding: 5px;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgb(231, 232, 233);
+        }
+
+        #player .controls .play {
+            float: left;
+            width: 45px;
+            height: 45px;
+            /* background-color: rgb(151, 13, 13); */
+            background-image: url(./img/play.png);
+            background-size: cover;
+        }
+
+        #player .controls .vol {
+            position: relative;
+            float: left;
+            width: 45px;
+            height: 45px;
+        }
+
+        #player .controls .vol .vol-controls {
+            display: none;
+            position: absolute;
+            top: -110px;
+            left: 18px;
+            width: 10px;
+            height: 100px;
+            border-radius: 5px;
+            background-image: linear-gradient(to top, rgb(0, 134, 179) 0%, rgb(0, 134, 179) 45%, #ccc 45%, #ccc 100%);
+        }
+
+        #player .controls .vol .vol-logo {
+            width: 45px;
+            height: 45px;
+            /* background-color: rgb(151, 13, 13); */
+            background-image: url(./img/vol.png);
+            background-size: cover;
+
+        }
+
+        #player .controls .progress {
+            float: left;
+            width: 60%;
+            height: 18px;
+            /* background-color: rgb(121, 55, 55); */
+            border-radius: 9px;
+            background-image: linear-gradient(to right, rgb(0, 134, 179) 0%, rgb(0, 134, 179) 0%, #ccc 0%, #ccc 100%);
+        }
+
+        #player .controls .upload {
+            float: left;
+            width: 45px;
+            height: 45px;
+            background-image: url(./img/upload.png);
+            background-size: cover;
+        }
+
+        #player .controls .upload .io {
+            width: 45px;
+            height: 45px;
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="player">
+        <h3 class='title'>hellow world</h3>
+        <div class="video-con">
+            <video src=""></video>
+        </div>
+        <div class="controls">
+            <button class='play'></button>
+            <div class=vol>
+                <button class='vol-logo'></button>
+                <div class='vol-controls'></div>
+            </div>
+            <div class="progress"></div>
+            <div class="upload">
+                <input type="file" class="io">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let videoCon = document.querySelector('.video-con');
+        ~~function () {
+            videoCon.style.height = window.innerWidth * 9 / 16 + 'px';
+            if (!window.onresize) {
+                window.onresize = arguments.callee
+            }
+        }()
+
+
+        let myVideo = document.querySelector('#player .video-con video');
+        let playBtn = document.querySelector('#player .controls .play');
+        myVideo.volume = 0.45;
+        let playStatus = 'off';
+
+        playBtn.onclick = function () {
+            switch (playStatus) {
+                case 'off':
+                    myVideo.play();
+                    playStatus = 'on';
+                    playBtn.style.backgroundImage = 'url(./img/pause.png)'
+                    break
+                case 'on':
+                    myVideo.pause();
+                    playStatus = 'off';
+                    playBtn.style.backgroundImage = 'url(./img/play.png)'
+                    break
+            }
+        }
+
+
+        let objProgress = document.querySelector('#player .controls .progress');
+
+        myVideo.addEventListener('timeupdate', function () {
+            let totalTime = this.duration;
+            let nowTime = this.currentTime;
+            let rate = nowTime / totalTime * 100 + '%';
+            objProgress.style.backgroundImage = `linear-gradient(to right, rgb(0,134,179) 0%,rgb(0,134,179) ${rate},#ccc ${rate},#ccc 100%)`;
+        })
+
+        objProgress.addEventListener('mousedown', setProgress);
+        objProgress.addEventListener('mousemove', setProgress);
+        objProgress.addEventListener('mouseup', setProgress);
+        let toggle = false
+        function setProgress(ev) {
+            switch (ev.type) {
+                case 'mousedown':
+                    toggle = true;
+                    myVideo.currentTime = myVideo.duration * ev.offsetX / this.clientWidth;
+                    break
+                case 'mousemove':
+                    if (toggle) {
+                        myVideo.currentTime = myVideo.duration * ev.offsetX / this.clientWidth;
+                    }
+                    break
+                case 'mouseup':
+                    toggle = false;
+                    break
+            }
+        }
+
+        let oVolLogo = document.querySelector('#player .controls .vol .vol-logo')
+        let oVol = document.querySelector('#player .controls .vol .vol-controls')
+        oVolLogo.addEventListener('click', displayVol);
+        let volStatus = 'off'
+        function displayVol() {
+            switch (volStatus) {
+                case 'off':
+                    oVol.style.display = 'block';
+                    volStatus = 'on';
+                    break
+                case 'on':
+                    oVol.style.display = 'none';
+                    volStatus = 'off';
+                    break
+            }
+        }
+        oVol.addEventListener('mousedown', modifyVol);
+        oVol.addEventListener('mousemove', modifyVol);
+        oVol.addEventListener('mouseup', modifyVol);
+        let volValue = false;
+        function modifyVol(ev) {
+            switch (ev.type) {
+                case 'mousedown':
+                    let rate = 1 - ev.offsetY / this.clientHeight
+                    oVol.style.backgroundImage = `linear-gradient(to top,rgb(0, 134, 179) 0%,rgb(0, 134, 179) ${rate * 100 + '%'}, #ccc ${rate * 100 + '%'}, #ccc 100%)`;
+                    myVideo.volume = rate;
+                    volValue = true;
+                    break
+                case 'mousemove':
+                    if (volValue) {
+                        let rate = 1 - ev.offsetY / this.clientHeight
+                        oVol.style.backgroundImage = `linear-gradient(to top,rgb(0, 134, 179) 0%,rgb(0, 134, 179) ${rate * 100 + '%'}, #ccc ${rate * 100 + '%'}, #ccc 100%)`;
+                        myVideo.volume = rate;
+                    }
+                    break
+                case 'mouseup':
+                    volValue = false;
+                    break
+            }
+        }
+
+        let openFile = document.querySelector('.io');
+        let fileName = document.querySelector('.title');
+        openFile.onchange = function(){
+            let currentSelectVideoFile = this;
+            fileName.innerText = currentSelectVideoFile.files[0].name;
+            let videoUrl = window.URL.createObjectURL(currentSelectVideoFile.files[0]);
+            myVideo.setAttribute('src',videoUrl);
+            objProgress.style.backgroundImage = `linear-gradient(to right, rgb(0,134,179) 0%,rgb(0,134,179) ${0},#ccc ${0},#ccc 100%)`;
+            playBtn.style.backgroundImage = 'url(./img/play.png)';
+            playStatus = 'off'
+        }
+    </script>
+</body>
+
+</html>
